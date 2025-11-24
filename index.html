@@ -4,589 +4,610 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neon Pulse Synthesizer</title>
+    <title>Neon Pulse Synthesizer Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap');
 
         body {
-            font-family: 'Rajdhani', sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: #050505;
             overflow: hidden;
-            /* Prevent scrolling on mobile */
             touch-action: none;
+            user-select: none;
+            color: #ccc;
         }
 
-        .font-cyber {
-            font-family: 'Orbitron', sans-serif;
+        /* Pro Audio UI Styles */
+        .pro-panel {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 4px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
         }
 
-        /* Neon Glow Effects */
-        .neon-text-blue {
-            text-shadow: 0 0 5px #00f3ff, 0 0 10px #00f3ff, 0 0 20px #00f3ff;
+        .pro-text {
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: -0.05em;
         }
 
-        .neon-text-pink {
-            text-shadow: 0 0 5px #ff00ff, 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+        .accent-text {
+            color: #00bcd4;
+            text-shadow: 0 0 1px rgba(0, 188, 212, 0.5);
         }
 
-        .neon-box {
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2), inset 0 0 20px rgba(0, 243, 255, 0.05);
-            border: 1px solid rgba(0, 243, 255, 0.3);
-            backdrop-filter: blur(5px);
+        /* Buttons */
+        .pro-btn {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #666;
+            transition: all 0.1s ease;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+
+        .pro-btn:hover {
+            border-color: #555;
+            color: #aaa;
+        }
+
+        .pro-btn.active {
+            background: #00bcd4;
+            color: #000;
+            border-color: #00bcd4;
+            box-shadow: 0 0 10px rgba(0, 188, 212, 0.3);
+            font-weight: bold;
+        }
+
+        .pro-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 2px;
+            background: #333;
+            outline: none;
+        }
+
+        .pro-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 10px;
+            height: 10px;
+            background: #00bcd4;
+            border-radius: 2px;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0, 188, 212, 0.4);
         }
 
         /* Piano Keys */
         .key {
-            transition: all 0.1s ease;
+            transition: background 0.05s, transform 0.05s;
             cursor: pointer;
             position: relative;
             z-index: 10;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
         }
 
         .white-key {
-            background: linear-gradient(180deg, #e0e0e0 0%, #ffffff 100%);
-            border-radius: 0 0 6px 6px;
-            box-shadow: inset 0 1px 0px #fff, inset 0 -5px 0px rgba(0, 0, 0, 0.2), 0 2px 5px rgba(0, 0, 0, 0.5);
-            z-index: 10;
+            background: #e5e5e5;
+            border-radius: 0 0 3px 3px;
+            box-shadow: inset 0 -5px 10px rgba(0, 0, 0, 0.1), 0 2px 2px rgba(0, 0, 0, 0.3);
+            border: 1px solid #000;
+            border-top: none;
         }
 
         .white-key.active {
-            background: #00f3ff;
-            box-shadow: 0 0 15px #00f3ff, 0 0 30px #00f3ff;
+            background: #00bcd4;
+            border-color: #008ba3;
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.3);
             transform: translateY(2px);
-            z-index: 12;
         }
 
         .black-key {
-            background: linear-gradient(180deg, #333 0%, #000 100%);
-            border-radius: 0 0 4px 4px;
-            box-shadow: inset 0 1px 0px #444, inset 0 -2px 0px rgba(255, 255, 255, 0.1), 0 2px 4px rgba(0, 0, 0, 0.8);
+            background: linear-gradient(180deg, #222 0%, #111 100%);
+            border-radius: 0 0 2px 2px;
+            box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.1), 2px 2px 2px rgba(0, 0, 0, 0.4);
             z-index: 20;
+            border: 1px solid #000;
+            border-top: none;
         }
 
         .black-key.active {
-            background: #ff00ff;
-            box-shadow: 0 0 15px #ff00ff, 0 0 30px #ff00ff;
+            background: #00bcd4;
+            background: linear-gradient(180deg, #00acc1 0%, #008ba3 100%);
             transform: translateY(2px);
+            box-shadow: 0 0 5px rgba(0, 188, 212, 0.5);
         }
 
-        /* Control Knobs/Sliders */
-        .cyber-slider {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 4px;
-            background: #333;
-            outline: none;
-            border-radius: 2px;
-        }
-
-        .cyber-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: #00f3ff;
-            box-shadow: 0 0 10px #00f3ff;
-            cursor: pointer;
-            margin-top: -6px;
-            /* center thumb */
-            position: relative;
-            z-index: 2;
-        }
-
-        .cyber-slider::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 4px;
-            cursor: pointer;
-            background: #1a1a1a;
-            border-radius: 2px;
-            border: 1px solid #333;
-        }
-
-        /* Custom scrollbar for key labels if needed */
         .key-label {
             pointer-events: none;
             position: absolute;
-            bottom: 8px;
+            bottom: 5px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 10px;
-            color: rgba(0, 0, 0, 0.5);
-            font-weight: bold;
+            font-size: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            color: rgba(0, 0, 0, 0.4);
+            font-weight: 700;
         }
 
         .black-key .key-label {
-            color: rgba(255, 255, 255, 0.5);
-            bottom: 6px;
+            color: rgba(255, 255, 255, 0.4);
         }
 
-        /* Visualizer Canvas */
+        /* Visualizer */
         #visualizer {
             width: 100%;
             height: 100%;
             display: block;
         }
+
+        .grid-bg {
+            background-size: 40px 40px;
+            background-image:
+                linear-gradient(to right, #ffffff05 1px, transparent 1px),
+                linear-gradient(to bottom, #ffffff05 1px, transparent 1px);
+        }
     </style>
 </head>
 
-<body class="h-screen flex flex-col items-center justify-between p-4 md:p-8 bg-[#050505] text-white">
+<body class="h-screen flex flex-col items-center p-4 lg:p-6 grid-bg">
 
-    <!-- Header & Visualizer -->
-    <div class="w-full max-w-5xl flex flex-col gap-4 mb-4 relative z-10">
-        <header class="flex justify-between items-end border-b border-[#00f3ff33] pb-4">
+    <!-- Top Rack: Header & Oscilloscope -->
+    <div class="w-full max-w-6xl flex flex-col md:flex-row gap-4 mb-4 h-32 md:h-40">
+
+        <!-- Brand / Status -->
+        <div class="pro-panel w-full md:w-1/4 p-4 flex flex-col justify-between relative overflow-hidden">
             <div>
-                <h1 class="font-cyber text-4xl md:text-5xl font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-[#00f3ff] to-[#ff00ff] neon-text-blue"
-                    style="filter: drop-shadow(0 0 5px rgba(0,243,255,0.5));">
-                    NEON<span class="text-white">SYNTH</span>
-                </h1>
-                <p class="text-[#00f3ff] text-xs tracking-[0.3em] font-bold mt-1 opacity-70">PROFESSIONAL AUDIO ENGINE
-                    // V.1.0</p>
-            </div>
-            <div class="hidden md:block text-right">
-                <div id="status-indicator" class="flex items-center gap-2 justify-end">
-                    <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_10px_red]"
-                        id="power-light"></span>
-                    <span class="text-xs font-mono text-gray-400" id="power-text">STANDBY</span>
+                <div class="flex items-center gap-2 mb-1">
+                    <div class="w-2 h-2 rounded-sm bg-[#00bcd4] shadow-[0_0_5px_#00bcd4]"></div>
+                    <h1 class="pro-text text-xl font-bold text-white tracking-tight">NEON<span
+                            class="font-light text-gray-500">SYNTH</span></h1>
                 </div>
-                <div class="text-[10px] text-gray-500 font-mono mt-1">CPU: <span id="cpu-load">0</span>%</div>
+                <p class="text-[9px] text-gray-500 font-mono tracking-widest uppercase">Pro Audio Engine v2.1</p>
             </div>
-        </header>
 
-        <!-- Main Display / Visualizer -->
-        <div class="neon-box rounded-lg h-32 md:h-48 bg-black/60 relative overflow-hidden group">
+            <div class="flex justify-between items-end border-t border-[#222] pt-2">
+                <div class="text-[9px] text-gray-600 font-mono">
+                    BUFFER: 256<br>SR: 48kHz
+                </div>
+                <div class="text-right">
+                    <div class="text-[9px] text-[#00bcd4] font-mono" id="status-text">READY</div>
+                    <div class="text-[9px] text-gray-500 font-mono">INST: <span id="inst-display"
+                            class="text-white">PIANO</span></div>
+                </div>
+            </div>
+            <div class="absolute top-0 right-0 w-1 h-full bg-[#00bcd4] opacity-20"></div>
+        </div>
+
+        <!-- Visualizer Screen -->
+        <div class="pro-panel flex-grow relative bg-black flex items-center justify-center group">
             <canvas id="visualizer"></canvas>
+            <div class="absolute inset-0 pointer-events-none border border-[#ffffff05]"></div>
 
-            <!-- Grid Overlay -->
-            <div
-                class="absolute inset-0 bg-[linear-gradient(rgba(0,243,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(0,243,255,0.05)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none">
-            </div>
-
-            <!-- "Screen" Reflection -->
-            <div class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none"></div>
-
-            <!-- Start Overlay -->
             <div id="start-overlay"
-                class="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-20 transition-opacity duration-500">
+                class="absolute inset-0 flex items-center justify-center bg-black/80 z-20 transition-opacity duration-300">
                 <button id="start-btn"
-                    class="font-cyber px-8 py-3 bg-transparent border-2 border-[#00f3ff] text-[#00f3ff] hover:bg-[#00f3ff] hover:text-black hover:shadow-[0_0_20px_#00f3ff] transition-all duration-300 rounded uppercase font-bold text-xl tracking-widest">
-                    Initialize System
+                    class="pro-text text-[#00bcd4] border border-[#00bcd4] px-6 py-2 rounded text-xs tracking-widest hover:bg-[#00bcd4] hover:text-black transition-colors uppercase font-bold">
+                    Initialize Audio
                 </button>
             </div>
         </div>
+
     </div>
 
-    <!-- Controls Dashboard -->
-    <div class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 z-10">
+    <!-- Middle Rack: Controls -->
+    <div class="w-full max-w-6xl pro-panel p-4 mb-4 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
 
-        <!-- Waveform Selector -->
-        <div class="neon-box p-4 rounded bg-black/40 md:col-span-4 flex flex-col justify-between">
-            <h3
-                class="text-[#ff00ff] text-xs tracking-widest font-bold mb-3 uppercase border-b border-[#ff00ff33] pb-1">
-                Oscillator Shape</h3>
-            <div class="flex justify-between gap-2">
-                <button
-                    class="wave-btn flex-1 py-2 rounded border border-[#333] hover:border-[#00f3ff] text-gray-400 hover:text-[#00f3ff] text-xs font-bold transition-all bg-black/50 active-wave"
-                    data-wave="sine">SINE</button>
-                <button
-                    class="wave-btn flex-1 py-2 rounded border border-[#333] hover:border-[#00f3ff] text-gray-400 hover:text-[#00f3ff] text-xs font-bold transition-all bg-black/50"
-                    data-wave="triangle">TRI</button>
-                <button
-                    class="wave-btn flex-1 py-2 rounded border border-[#333] hover:border-[#00f3ff] text-gray-400 hover:text-[#00f3ff] text-xs font-bold transition-all bg-black/50"
-                    data-wave="sawtooth">SAW</button>
-                <button
-                    class="wave-btn flex-1 py-2 rounded border border-[#333] hover:border-[#00f3ff] text-gray-400 hover:text-[#00f3ff] text-xs font-bold transition-all bg-black/50"
-                    data-wave="square">SQR</button>
+        <!-- Instrument Selector -->
+        <div class="md:col-span-5 flex flex-col">
+            <label class="text-[9px] text-gray-500 font-mono uppercase tracking-widest mb-2">Instrument Bank</label>
+            <div class="grid grid-cols-4 gap-1">
+                <button class="pro-btn py-3 rounded-sm active" data-inst="piano">Piano</button>
+                <button class="pro-btn py-3 rounded-sm" data-inst="guitar">Guitar</button>
+                <button class="pro-btn py-3 rounded-sm" data-inst="bansuri">Bansuri</button>
+                <button class="pro-btn py-3 rounded-sm" data-inst="synth">Synth</button>
+            </div>
+        </div>
+
+        <!-- Synth Specific Controls (Only visible in synth mode mostly, but kept for all for simplicity) -->
+        <div class="md:col-span-3 flex flex-col items-center border-l border-r border-[#222] px-4">
+            <label class="text-[9px] text-gray-500 font-mono uppercase tracking-widest mb-2">Waveform (Synth)</label>
+            <div class="grid grid-cols-2 gap-1 w-full">
+                <button class="pro-btn py-1 rounded-sm active wave-btn" data-wave="sine">Sine</button>
+                <button class="pro-btn py-1 rounded-sm wave-btn" data-wave="triangle">Tri</button>
+                <button class="pro-btn py-1 rounded-sm wave-btn" data-wave="sawtooth">Saw</button>
+                <button class="pro-btn py-1 rounded-sm wave-btn" data-wave="square">Sqr</button>
             </div>
         </div>
 
         <!-- Master Volume -->
-        <div class="neon-box p-4 rounded bg-black/40 md:col-span-4 flex flex-col justify-between">
-            <div class="flex justify-between items-center border-b border-[#00f3ff33] pb-1 mb-3">
-                <h3 class="text-[#00f3ff] text-xs tracking-widest font-bold uppercase">Master Gain</h3>
-                <span id="vol-display" class="text-[#00f3ff] text-xs font-mono">75%</span>
+        <div class="md:col-span-4 flex flex-col">
+            <div class="flex justify-between mb-2">
+                <label class="text-[9px] text-gray-500 font-mono uppercase tracking-widest">Master Output</label>
+                <span id="vol-display" class="text-[9px] text-[#00bcd4] font-mono">75%</span>
             </div>
-            <input type="range" id="volume-slider" min="0" max="100" value="75" class="cyber-slider">
-        </div>
-
-        <!-- Effects/Info -->
-        <div class="neon-box p-4 rounded bg-black/40 md:col-span-4 flex flex-col justify-center">
-            <div class="flex justify-between items-center text-xs text-gray-400 font-mono mb-1">
-                <span>SUSTAIN</span>
-                <span class="text-[#ff00ff]">ON</span>
-            </div>
-            <div class="w-full bg-[#111] h-1 rounded overflow-hidden mb-3">
-                <div class="bg-[#ff00ff] w-full h-full shadow-[0_0_5px_#ff00ff]"></div>
-            </div>
-            <div class="text-[10px] text-gray-500 text-center uppercase tracking-wider">
-                Use Keyboard <span class="text-white font-bold">A-K</span> and <span
-                    class="text-white font-bold">W-U</span>
+            <div class="relative h-6 flex items-center">
+                <input type="range" id="volume-slider" min="0" max="100" value="75" class="pro-slider">
             </div>
         </div>
     </div>
 
-    <!-- Piano Bed -->
-    <div class="w-full max-w-5xl relative z-10 flex-grow flex items-end justify-center pb-2">
+    <!-- Bottom Rack: Keyboard -->
+    <div class="w-full max-w-6xl flex-grow flex flex-col">
         <div
-            class="relative w-full h-48 md:h-64 rounded-b-lg flex justify-center bg-[#111] p-1 shadow-[0_10px_50px_rgba(0,0,0,0.5)] border-t-4 border-[#333]">
-            <!-- Decorative strip -->
-            <div
-                class="absolute top-[-4px] left-0 w-full h-1 bg-gradient-to-r from-[#00f3ff] via-[#ff00ff] to-[#00f3ff] opacity-50">
-            </div>
-
-            <div id="piano-container" class="relative flex h-full w-full max-w-4xl mx-auto">
-                <!-- Keys will be generated by JS -->
+            class="relative w-full h-full min-h-[180px] bg-[#1a1a1a] rounded-t-md border-t-4 border-[#333] shadow-2xl flex justify-center pt-1 pb-2 px-1">
+            <div id="piano-container" class="relative flex h-full w-full">
+                <!-- Keys Generated Here -->
             </div>
         </div>
-    </div>
-
-    <!-- Background Grid Effect -->
-    <div class="fixed inset-0 z-0 pointer-events-none perspective-[1000px]">
-        <div
-            class="absolute bottom-0 w-full h-[50vh] bg-[linear-gradient(to_bottom,transparent_0%,rgba(0,243,255,0.03)_100%)] transform rotate-x-[60deg] origin-bottom scale-[2]">
+        <div class="w-full text-center py-2 text-[9px] text-gray-600 font-mono">
+            KEYBOARD: [Z-M] Lower Octave • [Q-P] Upper Octave
         </div>
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(5,5,5,0)_0%,rgba(5,5,5,1)_100%)]"></div>
     </div>
 
     <script>
-        /**
-         * Neon Synth Audio Engine
-         * Professional polyphonic synthesizer using Web Audio API
-         */
-
+        // --- Audio Engine ---
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx;
         let masterGainNode;
         let analyser;
-        let oscillatorType = 'sine';
-        const activeOscillators = {}; // Map note frequencies to oscillator nodes
 
-        // Define frequency map for a standard octave (C4 to E5)
-        // Key mapping: Z X C V B N M , . / (lower) and A S D F G H J K L ; ' (upper)
-        // We will implement a versatile range suited for standard typing
+        let currentInstrument = 'piano';
+        let synthWaveType = 'sine';
+        const activeOscillators = {}; // Stores { osc, gain, filter, lfo }
 
         const noteFrequencies = {
-            'C4': 261.63, 'C#4': 277.18, 'D4': 293.66, 'D#4': 311.13, 'E4': 329.63,
-            'F4': 349.23, 'F#4': 369.99, 'G4': 392.00, 'G#4': 415.30, 'A4': 440.00,
-            'A#4': 466.16, 'B4': 493.88, 'C5': 523.25, 'C#5': 554.37, 'D5': 587.33,
-            'D#5': 622.25, 'E5': 659.25, 'F5': 698.46
+            'C3': 130.81, 'C#3': 138.59, 'D3': 146.83, 'D#3': 155.56, 'E3': 164.81, 'F3': 174.61, 'F#3': 185.00, 'G3': 196.00, 'G#3': 207.65, 'A3': 220.00, 'A#3': 233.08, 'B3': 246.94,
+            'C4': 261.63, 'C#4': 277.18, 'D4': 293.66, 'D#4': 311.13, 'E4': 329.63, 'F4': 349.23, 'F#4': 369.99, 'G4': 392.00, 'G#4': 415.30, 'A4': 440.00, 'A#4': 466.16, 'B4': 493.88,
+            'C5': 523.25, 'C#5': 554.37, 'D5': 587.33, 'D#5': 622.25, 'E5': 659.25, 'F5': 698.46
         };
 
-        // Layout Config: White keys and Black keys
-        // We render them procedurally to manage the layout logic easily
         const pianoLayout = [
-            { note: 'C4', type: 'white', keyBind: 'a', label: 'A' },
-            { note: 'C#4', type: 'black', keyBind: 'w', label: 'W' },
-            { note: 'D4', type: 'white', keyBind: 's', label: 'S' },
-            { note: 'D#4', type: 'black', keyBind: 'e', label: 'E' },
-            { note: 'E4', type: 'white', keyBind: 'd', label: 'D' },
-            { note: 'F4', type: 'white', keyBind: 'f', label: 'F' },
-            { note: 'F#4', type: 'black', keyBind: 't', label: 'T' },
-            { note: 'G4', type: 'white', keyBind: 'g', label: 'G' },
-            { note: 'G#4', type: 'black', keyBind: 'y', label: 'Y' },
-            { note: 'A4', type: 'white', keyBind: 'h', label: 'H' },
-            { note: 'A#4', type: 'black', keyBind: 'u', label: 'U' },
-            { note: 'B4', type: 'white', keyBind: 'j', label: 'J' },
-            { note: 'C5', type: 'white', keyBind: 'k', label: 'K' },
-            { note: 'C#5', type: 'black', keyBind: 'o', label: 'O' },
-            { note: 'D5', type: 'white', keyBind: 'l', label: 'L' },
-            { note: 'D#5', type: 'black', keyBind: 'p', label: 'P' },
-            { note: 'E5', type: 'white', keyBind: ';', label: ';' }
+            { note: 'C3', type: 'white', keyBind: 'z' }, { note: 'C#3', type: 'black', keyBind: 's' },
+            { note: 'D3', type: 'white', keyBind: 'x' }, { note: 'D#3', type: 'black', keyBind: 'd' },
+            { note: 'E3', type: 'white', keyBind: 'c' }, { note: 'F3', type: 'white', keyBind: 'v' },
+            { note: 'F#3', type: 'black', keyBind: 'g' }, { note: 'G3', type: 'white', keyBind: 'b' },
+            { note: 'G#3', type: 'black', keyBind: 'h' }, { note: 'A3', type: 'white', keyBind: 'n' },
+            { note: 'A#3', type: 'black', keyBind: 'j' }, { note: 'B3', type: 'white', keyBind: 'm' },
+
+            { note: 'C4', type: 'white', keyBind: 'q' }, { note: 'C#4', type: 'black', keyBind: '2' },
+            { note: 'D4', type: 'white', keyBind: 'w' }, { note: 'D#4', type: 'black', keyBind: '3' },
+            { note: 'E4', type: 'white', keyBind: 'e' }, { note: 'F4', type: 'white', keyBind: 'r' },
+            { note: 'F#4', type: 'black', keyBind: '5' }, { note: 'G4', type: 'white', keyBind: 't' },
+            { note: 'G#4', type: 'black', keyBind: '6' }, { note: 'A4', type: 'white', keyBind: 'y' },
+            { note: 'A#4', type: 'black', keyBind: '7' }, { note: 'B4', type: 'white', keyBind: 'u' },
+            { note: 'C5', type: 'white', keyBind: 'i' }, { note: 'C#5', type: 'black', keyBind: '9' },
+            { note: 'D5', type: 'white', keyBind: 'o' }, { note: 'D#5', type: 'black', keyBind: '0' },
+            { note: 'E5', type: 'white', keyBind: 'p' }, { note: 'F5', type: 'white', keyBind: '[' }
         ];
 
-        // --- Initialization ---
-
+        // --- Init ---
         const startBtn = document.getElementById('start-btn');
         const startOverlay = document.getElementById('start-overlay');
-        const powerLight = document.getElementById('power-light');
-        const powerText = document.getElementById('power-text');
+        const statusText = document.getElementById('status-text');
+        const instDisplay = document.getElementById('inst-display');
 
         startBtn.addEventListener('click', initAudio);
 
         function initAudio() {
-            if (audioCtx) return;
+            if (!audioCtx) {
+                try {
+                    audioCtx = new AudioContext();
+                    masterGainNode = audioCtx.createGain();
+                    analyser = audioCtx.createAnalyser();
 
-            audioCtx = new AudioContext();
+                    masterGainNode.gain.value = 0.5;
+                    analyser.fftSize = 2048;
 
-            // Master Gain (Volume)
-            masterGainNode = audioCtx.createGain();
-            masterGainNode.gain.value = 0.5; // Default volume
-            masterGainNode.connect(audioCtx.destination);
+                    masterGainNode.connect(analyser);
+                    analyser.connect(audioCtx.destination);
 
-            // Analyser for Visuals
-            analyser = audioCtx.createAnalyser();
-            analyser.fftSize = 2048;
-            masterGainNode.connect(analyser); // Connect gain to analyser, analyser is already implicitly connected to destination via the previous line? No, we need to chain.
-            // Correct chain: Sources -> LocalGain -> MasterGain -> Analyser -> Destination
-            masterGainNode.disconnect();
-            masterGainNode.connect(analyser);
-            analyser.connect(audioCtx.destination);
-
-            // UI Updates
-            startOverlay.style.opacity = '0';
-            setTimeout(() => startOverlay.style.display = 'none', 500);
-
-            powerLight.classList.remove('bg-red-500', 'shadow-[0_0_10px_red]');
-            powerLight.classList.add('bg-[#00f3ff]', 'shadow-[0_0_10px_#00f3ff]');
-            powerText.innerText = "ONLINE";
-            powerText.classList.replace('text-gray-400', 'text-[#00f3ff]');
-
-            // Start Visualizer
-            drawVisualizer();
+                    startOverlay.style.opacity = '0';
+                    setTimeout(() => startOverlay.style.display = 'none', 300);
+                    statusText.innerText = "ACTIVE";
+                    statusText.classList.add('text-[#00bcd4]');
+                    drawVisualizer();
+                } catch (e) { console.error(e); }
+            } else if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
         }
 
-        // --- Synth Logic ---
+        // --- Instruments Logic ---
 
         function playNote(note) {
-            if (!audioCtx) return;
-            if (activeOscillators[note]) return; // Already playing
+            if (!audioCtx) initAudio();
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+
+            if (activeOscillators[note]) return;
 
             const freq = noteFrequencies[note];
+            const now = audioCtx.currentTime;
+            const nodes = {};
 
-            // Oscillator
-            const osc = audioCtx.createOscillator();
-            osc.type = oscillatorType;
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            if (currentInstrument === 'piano') {
+                // Piano: Triangle wave with envelope
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
 
-            // Envelope (Gain for this specific note)
-            const noteGain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, now);
 
-            // Wiring
-            osc.connect(noteGain);
-            noteGain.connect(masterGainNode);
+                osc.connect(gain);
+                gain.connect(masterGainNode);
 
-            // ADSR Envelope Settings
-            const attackTime = 0.05;
-            const decayTime = 0.1;
-            const sustainLevel = 0.7;
+                // Sharp attack, steady decay
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.7, now + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 1.5); // Ring out
 
-            // Attack
-            noteGain.gain.setValueAtTime(0, audioCtx.currentTime);
-            noteGain.gain.linearRampToValueAtTime(1, audioCtx.currentTime + attackTime);
-            // Decay to Sustain
-            noteGain.gain.exponentialRampToValueAtTime(sustainLevel, audioCtx.currentTime + attackTime + decayTime);
+                osc.start(now);
+                nodes.osc = osc;
+                nodes.gain = gain;
 
-            osc.start();
+            } else if (currentInstrument === 'guitar') {
+                // Guitar: Sawtooth + LowPass Filter Pluck
+                const osc = audioCtx.createOscillator();
+                const filter = audioCtx.createBiquadFilter();
+                const gain = audioCtx.createGain();
 
-            // Store ref to stop later
-            activeOscillators[note] = { osc, noteGain };
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(freq, now);
 
-            // Visual feedback
+                filter.type = 'lowpass';
+                filter.Q.value = 5; // Resonance for string tone
+                // Filter Envelope (The Pluck)
+                filter.frequency.setValueAtTime(200, now);
+                filter.frequency.exponentialRampToValueAtTime(3000, now + 0.05); // Snap open
+                filter.frequency.exponentialRampToValueAtTime(500, now + 0.4); // Close down
+
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(masterGainNode);
+
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.8, now + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 2.0);
+
+                osc.start(now);
+                nodes.osc = osc;
+                nodes.gain = gain;
+                nodes.filter = filter;
+
+            } else if (currentInstrument === 'bansuri') {
+                // Bansuri: Sine + Vibrato (LFO)
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                const lfo = audioCtx.createOscillator();
+                const lfoGain = audioCtx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now);
+
+                // LFO logic (Vibrato)
+                lfo.frequency.value = 5; // 5Hz wobble
+                lfoGain.gain.value = 5; // Depth of wobble
+                lfo.connect(lfoGain);
+                lfoGain.connect(osc.frequency);
+
+                osc.connect(gain);
+                gain.connect(masterGainNode);
+
+                // Soft breathy attack
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.6, now + 0.2); // Swells in
+                gain.gain.setValueAtTime(0.6, now + 0.3);
+
+                osc.start(now);
+                lfo.start(now);
+
+                nodes.osc = osc;
+                nodes.gain = gain;
+                nodes.lfo = lfo;
+
+            } else {
+                // Synth (Standard)
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = synthWaveType;
+                osc.frequency.setValueAtTime(freq, now);
+
+                osc.connect(gain);
+                gain.connect(masterGainNode);
+
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.5, now + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.3, now + 0.1);
+
+                osc.start(now);
+                nodes.osc = osc;
+                nodes.gain = gain;
+            }
+
+            activeOscillators[note] = nodes;
             highlightKey(note, true);
         }
 
         function stopNote(note) {
-            if (!audioCtx || !activeOscillators[note]) return;
+            if (!activeOscillators[note]) return;
 
-            const { osc, noteGain } = activeOscillators[note];
-            const releaseTime = 0.3;
+            const nodes = activeOscillators[note];
+            const now = audioCtx.currentTime;
 
-            // Release
-            // Cancel any scheduled updates to avoid conflict
-            noteGain.gain.cancelScheduledValues(audioCtx.currentTime);
-            // Ramp down
-            noteGain.gain.setValueAtTime(noteGain.gain.value, audioCtx.currentTime);
-            noteGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + releaseTime);
+            // Release envelope depends on instrument
+            let release = 0.1;
+            if (currentInstrument === 'bansuri') release = 0.4; // Flute fades out slowly
+            if (currentInstrument === 'guitar') release = 0.3;
+            if (currentInstrument === 'piano') release = 0.2;
 
-            osc.stop(audioCtx.currentTime + releaseTime);
+            // Cancel any future decay ramps and set release
+            nodes.gain.gain.cancelScheduledValues(now);
+            nodes.gain.gain.setValueAtTime(nodes.gain.gain.value, now);
+            nodes.gain.gain.exponentialRampToValueAtTime(0.001, now + release);
 
-            // Cleanup
+            if (nodes.osc) nodes.osc.stop(now + release + 0.1);
+            if (nodes.lfo) nodes.lfo.stop(now + release + 0.1);
+
+            // Cleanup memory
             setTimeout(() => {
-                osc.disconnect();
-                noteGain.disconnect();
-            }, releaseTime * 1000 + 100);
+                if (nodes.osc) nodes.osc.disconnect();
+                if (nodes.gain) nodes.gain.disconnect();
+                if (nodes.filter) nodes.filter.disconnect();
+                if (nodes.lfo) nodes.lfo.disconnect();
+            }, release * 1000 + 200);
 
             delete activeOscillators[note];
-
-            // Visual feedback
             highlightKey(note, false);
         }
 
-        // --- DOM Generation ---
+        // --- Inputs & Controls ---
 
+        // Instrument Switching
+        document.querySelectorAll('[data-inst]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('[data-inst]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentInstrument = btn.dataset.inst;
+                instDisplay.innerText = currentInstrument.toUpperCase();
+
+                // Toggle visibility of Synth controls
+                const waveControls = document.querySelectorAll('.wave-btn');
+                waveControls.forEach(wb => {
+                    wb.style.opacity = currentInstrument === 'synth' ? '1' : '0.3';
+                    wb.style.pointerEvents = currentInstrument === 'synth' ? 'auto' : 'none';
+                });
+            });
+        });
+
+        // Default visuals
+        const waveControls = document.querySelectorAll('.wave-btn');
+        waveControls.forEach(wb => {
+            wb.style.opacity = '0.3';
+            wb.style.pointerEvents = 'none';
+        });
+
+
+        // Waveform Switching (Synth Mode)
+        document.querySelectorAll('[data-wave]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('[data-wave]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                synthWaveType = btn.dataset.wave;
+                // Auto switch to synth mode if wave clicked
+                document.querySelector('[data-inst="synth"]').click();
+            });
+        });
+
+        // Piano Generation
         const pianoContainer = document.getElementById('piano-container');
-        const keyMapDOM = {}; // note -> element
+        const keyMapDOM = {};
 
         function renderPiano() {
-            // White keys take up 1 unit, Black keys overlay them
-            // We use flexbox for white keys, absolute for black keys relative to container
+            const whiteKeys = pianoLayout.filter(k => k.type === 'white');
+            const totalWhite = whiteKeys.length;
+            const whiteWidth = 100 / totalWhite;
+            let whiteIndex = 0;
 
-            // First, creating a wrapper for proper spacing
-            // Let's count white keys to determine width percentages
-            const whiteKeyCount = pianoLayout.filter(k => k.type === 'white').length;
-            const whiteKeyWidth = 100 / whiteKeyCount;
+            pianoLayout.forEach(k => {
+                const key = document.createElement('div');
+                key.className = k.type === 'white' ? 'key white-key h-full' : 'key black-key h-[60%] absolute top-0';
 
-            let whiteKeyIndex = 0;
+                if (k.type === 'white') {
+                    key.style.width = `${whiteWidth}%`;
+                    whiteIndex++;
+                } else {
+                    key.style.width = `${whiteWidth * 0.7}%`;
+                    const leftPos = (whiteIndex * whiteWidth) - ((whiteWidth * 0.7) / 2);
+                    key.style.left = `${leftPos}%`;
+                }
 
-            pianoLayout.forEach((keyData) => {
-                const keyEl = document.createElement('div');
-                keyEl.dataset.note = keyData.note;
-
-                // Label
                 const label = document.createElement('span');
                 label.className = 'key-label';
-                label.innerText = keyData.keyBind.toUpperCase();
-                keyEl.appendChild(label);
+                label.innerText = k.keyBind.toUpperCase();
+                key.appendChild(label);
 
-                // Events
-                const startEvent = (e) => { e.preventDefault(); playNote(keyData.note); };
-                const endEvent = (e) => { e.preventDefault(); stopNote(keyData.note); };
+                const start = (e) => { e.preventDefault(); playNote(k.note); };
+                const end = (e) => { e.preventDefault(); stopNote(k.note); };
 
-                // Mouse
-                keyEl.addEventListener('mousedown', startEvent);
-                keyEl.addEventListener('mouseup', endEvent);
-                keyEl.addEventListener('mouseleave', endEvent);
+                key.addEventListener('mousedown', start);
+                key.addEventListener('mouseup', end);
+                key.addEventListener('mouseleave', end);
+                key.addEventListener('touchstart', start, { passive: false });
+                key.addEventListener('touchend', end);
 
-                // Touch
-                keyEl.addEventListener('touchstart', startEvent, { passive: false });
-                keyEl.addEventListener('touchend', endEvent);
-                keyEl.addEventListener('touchcancel', endEvent);
-
-                keyMapDOM[keyData.note] = keyEl;
-
-                if (keyData.type === 'white') {
-                    keyEl.className = 'key white-key h-full bg-white border border-gray-300';
-                    keyEl.style.width = `${whiteKeyWidth}%`;
-                    pianoContainer.appendChild(keyEl);
-                    whiteKeyIndex++;
-                } else {
-                    keyEl.className = 'key black-key h-[60%] bg-black absolute top-0';
-                    keyEl.style.width = `${whiteKeyWidth * 0.65}%`; // Black key slightly narrower
-                    // Calculate position: Left edge of current white key index minus half black width
-                    // The previous loop incremented index, so play catchup
-                    // A black key comes AFTER a white key usually (C, C#, D).
-                    // Logic: Place it between white key (index-1) and white key (index)
-                    // The 'left' should be (index * whiteWidth) - (blackWidth / 2)
-
-                    const positionLeft = (whiteKeyIndex * whiteKeyWidth) - ((whiteKeyWidth * 0.65) / 2);
-                    keyEl.style.left = `${positionLeft}%`;
-                    pianoContainer.appendChild(keyEl);
-                }
+                keyMapDOM[k.note] = key;
+                pianoContainer.appendChild(key);
             });
         }
-
         renderPiano();
 
-        // --- Interaction Handling ---
-
-        function highlightKey(note, isActive) {
-            const el = keyMapDOM[note];
-            if (el) {
-                if (isActive) el.classList.add('active');
-                else el.classList.remove('active');
+        function highlightKey(note, on) {
+            if (keyMapDOM[note]) {
+                if (on) keyMapDOM[note].classList.add('active');
+                else keyMapDOM[note].classList.remove('active');
             }
         }
 
-        // Keyboard support
-        const keyToNote = {};
-        pianoLayout.forEach(k => keyToNote[k.keyBind] = k.note);
+        const keyMap = {};
+        pianoLayout.forEach(k => keyMap[k.keyBind] = k.note);
 
-        document.addEventListener('keydown', (e) => {
-            if (e.repeat) return;
-            const key = e.key.toLowerCase();
-            if (keyToNote[key]) playNote(keyToNote[key]);
+        document.addEventListener('keydown', e => {
+            if (e.repeat || e.ctrlKey || e.metaKey) return;
+            const k = e.key.toLowerCase();
+            if (keyMap[k]) playNote(keyMap[k]);
+        });
+        document.addEventListener('keyup', e => {
+            const k = e.key.toLowerCase();
+            if (keyMap[k]) stopNote(keyMap[k]);
         });
 
-        document.addEventListener('keyup', (e) => {
-            const key = e.key.toLowerCase();
-            if (keyToNote[key]) stopNote(keyToNote[key]);
-        });
-
-        // --- Controls ---
-
-        // Waveform
-        const waveBtns = document.querySelectorAll('.wave-btn');
-        waveBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                // Update UI
-                waveBtns.forEach(b => {
-                    b.classList.remove('border-[#00f3ff]', 'text-[#00f3ff]', 'shadow-[0_0_10px_#00f3ff]');
-                    b.classList.add('text-gray-400', 'border-[#333]');
-                });
-                btn.classList.add('border-[#00f3ff]', 'text-[#00f3ff]', 'shadow-[0_0_10px_#00f3ff]');
-                btn.classList.remove('text-gray-400', 'border-[#333]');
-
-                // Update Engine
-                oscillatorType = btn.dataset.wave;
-            });
-        });
-        // Select first by default visually
-        document.querySelector('[data-wave="sine"]').click();
-
-        // Volume
         const volSlider = document.getElementById('volume-slider');
         const volDisplay = document.getElementById('vol-display');
-
-        volSlider.addEventListener('input', (e) => {
+        volSlider.addEventListener('input', e => {
             const val = e.target.value;
             volDisplay.innerText = `${val}%`;
-            if (masterGainNode) {
-                masterGainNode.gain.setValueAtTime(val / 100, audioCtx.currentTime);
-            }
+            if (masterGainNode) masterGainNode.gain.setValueAtTime(val / 100, audioCtx.currentTime);
         });
 
-        // --- Visualizer ---
-
-        const canvas = document.getElementById('visualizer');
-        const canvasCtx = canvas.getContext('2d');
-
-        // Resize canvas
-        function resizeCanvas() {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
+        // Visualizer
+        const cvs = document.getElementById('visualizer');
+        const ctx = cvs.getContext('2d');
+        function resize() {
+            cvs.width = cvs.offsetWidth;
+            cvs.height = cvs.offsetHeight;
         }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+        window.addEventListener('resize', resize);
+        setTimeout(resize, 100);
 
         function drawVisualizer() {
             requestAnimationFrame(drawVisualizer);
-
             if (!analyser) return;
 
-            const bufferLength = analyser.frequencyBinCount;
-            const dataArray = new Uint8Array(bufferLength);
+            const buffer = analyser.frequencyBinCount;
+            const data = new Uint8Array(buffer);
+            analyser.getByteTimeDomainData(data);
 
-            analyser.getByteTimeDomainData(dataArray);
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, cvs.width, cvs.height);
+            ctx.beginPath();
+            ctx.strokeStyle = '#111';
+            ctx.moveTo(0, cvs.height / 2);
+            ctx.lineTo(cvs.width, cvs.height / 2);
+            ctx.stroke();
 
-            // Fade effect
-            canvasCtx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-            canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-
-            canvasCtx.lineWidth = 2;
-            canvasCtx.strokeStyle = '#00f3ff';
-            canvasCtx.shadowBlur = 10;
-            canvasCtx.shadowColor = '#00f3ff';
-
-            canvasCtx.beginPath();
-
-            const sliceWidth = canvas.width * 1.0 / bufferLength;
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = '#00bcd4';
+            ctx.beginPath();
+            const slice = cvs.width * 1.0 / buffer;
             let x = 0;
-
-            for (let i = 0; i < bufferLength; i++) {
-                const v = dataArray[i] / 128.0;
-                const y = v * canvas.height / 2;
-
-                if (i === 0) {
-                    canvasCtx.moveTo(x, y);
-                } else {
-                    canvasCtx.lineTo(x, y);
-                }
-
-                x += sliceWidth;
+            for (let i = 0; i < buffer; i++) {
+                const v = data[i] / 128.0;
+                const y = v * cvs.height / 2;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                x += slice;
             }
-
-            canvasCtx.lineTo(canvas.width, canvas.height / 2);
-            canvasCtx.stroke();
-
-            // Fake CPU load just for aesthetics
-            if (Math.random() > 0.9) {
-                document.getElementById('cpu-load').innerText = Math.floor(Math.random() * 15) + 5;
-            }
+            ctx.stroke();
         }
-
     </script>
 </body>
 
